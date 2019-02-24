@@ -1,5 +1,6 @@
 package com.practice.kessler.liltwitter.business.service;
 
+import com.practice.kessler.liltwitter.data.entity.Comment;
 import com.practice.kessler.liltwitter.data.entity.Tweet;
 import com.practice.kessler.liltwitter.data.entity.User;
 import com.practice.kessler.liltwitter.data.entity.UserRelationship;
@@ -97,11 +98,33 @@ public class UserService {
     }
 
     //TODO if optional fields are null, do I need to check for that and not set them?
-    public boolean createAccount(String userName, String actualName, String location){
+    public void createAccount(String userName, String actualName, String location){
         User user = new User();
         user.setUserName(userName);
         user.setName(actualName);
         user.setLocation(location);
+    }
+
+    //TODO change string return to error, update datetime issue
+    public String comment(String tweetId, String message, String commenterUserName) {
+        User commenter = userRepository.findByUserName(commenterUserName);
+        Optional<Tweet> tweet = tweetRepository.findById(Long.parseLong(tweetId));
+        if (tweet.isPresent()) {
+            long tweeterUserId = tweet.get().getUserId();
+            Optional<User> tweeter = userRepository.findById(tweeterUserId);
+            if (tweeter.isPresent()) {
+                if (commenter.getFollowedUsers().contains(tweeter.get())) {
+                    Comment comment = new Comment();
+                    comment.setOriginalTweetId(Long.parseLong(tweetId));
+                    comment.setWrittenById(commenter.getId());
+                    //comment.setTimestamp(Time.now());
+                    commentRepository.save(comment);
+                    return "success";
+
+                } else return "Can't comment on someone you're not following";
+            }
+            else return "something went wrong. found tweet, but can't locate its author";
+        } else return "No tweet with that ID";
     }
 
 
