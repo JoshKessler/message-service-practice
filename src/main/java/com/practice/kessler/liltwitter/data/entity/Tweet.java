@@ -1,4 +1,4 @@
-package com.practice.kessler.liltwitter.entity;
+package com.practice.kessler.liltwitter.data.entity;
 
 import javax.persistence.*;
 import java.util.Date;

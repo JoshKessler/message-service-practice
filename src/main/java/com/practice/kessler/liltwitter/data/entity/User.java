@@ -1,7 +1,7 @@
-package com.practice.kessler.liltwitter.entity;
+package com.practice.kessler.liltwitter.data.entity;
 
 import javax.persistence.*;
-import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "USER")
@@ -16,8 +16,10 @@ public class User {
     private String name;
     @Column(name = "LOCATION")
     private String location;
-    //TODO figure out if I can do this even if it's not in the schema
-    private List<User> followingUsers;
+    @ManyToMany
+    @JoinTable(name="USER_RELATIONSHIPS", joinColumns = @JoinColumn(name="FOLLOWER_ID"),
+            inverseJoinColumns = @JoinColumn(name="FOLLOWED_ID"))
+    private Set<User> followedUsers;
 
     public long getId() {
         return id;
@@ -51,12 +53,12 @@ public class User {
         this.location = location;
     }
 
-    public List<User> getFollowingUsers() {
-        return followingUsers;
+    public Set<User> getFollowedUsers() {
+        return followedUsers;
     }
 
-    public void setFollowingUsers(List<User> followingUsers) {
-        this.followingUsers = followingUsers;
+    public void setFollowedUsers(Set<User> followedUsers) {
+        this.followedUsers = followedUsers;
     }
 
 }
