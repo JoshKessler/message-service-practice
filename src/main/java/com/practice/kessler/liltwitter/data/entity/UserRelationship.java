@@ -7,7 +7,7 @@ import javax.persistence.*;
 public class UserRelationship {
     @Id
     @Column(name = "ID")
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     @Column(name = "FOLLOWER_ID")
     private long followerId;

@@ -9,7 +9,7 @@ import java.util.List;
 public class Tweet {
     @Id
     @Column(name = "TWEET_ID")
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     @Column(name = "WRITTEN_BY")
     private long userId;

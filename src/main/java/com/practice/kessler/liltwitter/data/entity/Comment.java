@@ -8,7 +8,7 @@ import java.util.Date;
 public class Comment {
     @Id
     @Column(name = "COMMENT_ID")
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     @Column(name = "ORIGINAL_TWEET_ID")
     private long originalTweetId;
