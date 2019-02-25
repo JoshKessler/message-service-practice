@@ -16,6 +16,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,9 +35,9 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public List<Tweet> getUsersTweets(String username){
+    public List<Tweet> getUsersTweets(String userName){
         List<Tweet> usersTweets = new ArrayList<>();
-        User user = userRepository.findByUserName(username);
+        User user = userRepository.findByUserName(userName);
         if (user != null){
             Iterable<Tweet> tweets = tweetRepository.findTweetByUserId(user.getId());
             if(tweets != null){
@@ -127,5 +128,32 @@ public class UserService {
         } else return "No tweet with that ID";
     }
 
+    public List<User> getAllUsers(){
+        List<User> users = new ArrayList<>();
+        Iterable<User> storedUsers = userRepository.findAll();
+        storedUsers.forEach(user -> {
+            users.add(user);
+        });
+        return users;
+    }
+
+
+    public List<User> getFollowedUsers(String userName) {
+        List<User> following = new ArrayList<>();
+        User user = userRepository.findByUserName(userName);
+        if (user != null) {
+            following.addAll(user.getFollowedUsers());
+            }
+        return following;
+    }
+
+    public List<Comment> getCommentsAssociatedWithTweet(String tweetId){
+        List<Comment> result = new ArrayList<>();
+        Iterable<Comment> comments = commentRepository.findAllByOriginalTweetId(Long.parseLong(tweetId));
+        comments.forEach(comment -> {
+            result.add(comment);
+        });
+        return result;
+    }
 
 }
