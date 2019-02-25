@@ -9,14 +9,11 @@ import com.practice.kessler.liltwitter.data.repository.UserRelationshipsReposito
 import com.practice.kessler.liltwitter.data.repository.TweetRepository;
 import com.practice.kessler.liltwitter.data.repository.UserRepository;
 import org.apache.tomcat.jni.Time;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Service;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -68,46 +65,45 @@ public class UserService {
     }
 
     //TODO decide if this should return UserRelationship
-    public boolean follow(String followerName, String followedName){
+    public UserRelationship follow(String followerName, String followedName){
         User follower = userRepository.findByUserName(followerName);
         User followed = userRepository.findByUserName(followedName);
         if (follower != null && followed != null) {
             UserRelationship newFollow = new UserRelationship();
             newFollow.setFollowedId(followed.getId());
             newFollow.setFollowerId(follower.getId());
-            userRelationshipsRepository.save(newFollow);
-            return true;
+            return userRelationshipsRepository.save(newFollow);
         }
-        return false;
+        return null;
     }
 
     //TODO what should this return, and update datetime issue
-    public boolean tweet(String userName, String message, String timestamp){
+    public Tweet tweet(String userName, String message, String timestamp){
         if (timestamp == null){
             timestamp = DATE_FORMAT.format(Time.now());
         }
         User user = userRepository.findByUserName(userName);
         if (user == null){
-            return false;
+            return null;
         }
         Tweet tweet = new Tweet();
         //tweet.setTimestamp(timestamp);
         tweet.setUserId(user.getId());
         tweet.setTweet(message);
-        tweetRepository.save(tweet);
-        return true;
+        return tweetRepository.save(tweet);
     }
 
     //TODO if optional fields are null, do I need to check for that and not set them?
-    public void createAccount(String userName, String actualName, String location){
+    public User createAccount(String userName, String actualName, String location){
         User user = new User();
         user.setUserName(userName);
         user.setName(actualName);
         user.setLocation(location);
+        return userRepository.save(user);
     }
 
     //TODO change string return to error, update datetime issue
-    public String comment(String tweetId, String message, String commenterUserName) {
+    public Comment comment(String tweetId, String message, String commenterUserName) {
         User commenter = userRepository.findByUserName(commenterUserName);
         Optional<Tweet> tweet = tweetRepository.findById(Long.parseLong(tweetId));
         if (tweet.isPresent()) {
@@ -119,13 +115,13 @@ public class UserService {
                     comment.setOriginalTweetId(Long.parseLong(tweetId));
                     comment.setWrittenById(commenter.getId());
                     //comment.setTimestamp(Time.now());
-                    commentRepository.save(comment);
-                    return "success";
-
-                } else return "Can't comment on someone you're not following";
+                    return commentRepository.save(comment);
+                    //"Can't comment on someone you're not following"
+                } else return null;
             }
-            else return "something went wrong. found tweet, but can't locate its author";
-        } else return "No tweet with that ID";
+
+            else return null; //"something went wrong. found tweet, but can't locate its author"
+        } else return null; //"No tweet with that ID"
     }
 
     public List<User> getAllUsers(){
