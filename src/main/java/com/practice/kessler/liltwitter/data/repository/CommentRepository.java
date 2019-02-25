@@ -9,5 +9,5 @@ import java.util.List;
 
 @Repository
 public interface CommentRepository extends CrudRepository <Comment, Long>{
-    List<User> findAllByFollowedId(Long id);
+    List<Comment> findAllByOriginalTweetId(Long id);
 }
