@@ -5,9 +5,11 @@ import com.practice.kessler.liltwitter.data.entity.Tweet;
 import com.practice.kessler.liltwitter.data.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
 import java.util.List;
 
 import static org.springframework.web.bind.annotation.RequestMethod.*;
@@ -19,7 +21,7 @@ public class UserServiceController {
     @Autowired
     private UserService userService;
 
-    @RequestMapping(method= GET, value="/user/")
+    @RequestMapping(method= GET, value="/user")
     public List<User> getAllUsers(){
         return this.userService.getAllUsers();
     }
@@ -37,5 +39,10 @@ public class UserServiceController {
     @RequestMapping(method= GET, value = "/user/{userName}/following")
     public List<User> getUsersFollowed(@PathVariable(value="userName")String userName){
         return this.userService.getFollowedUsers(userName);
+    }
+
+    @RequestMapping(method= POST, value = "/new/user")
+    public User createAccount(@RequestBody HashMap<String,String> userData){
+        return userService.createAccount(userData.get("username"), userData.get("name"), userData.get("location"));
     }
 }
