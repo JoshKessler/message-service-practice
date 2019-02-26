@@ -63,6 +63,16 @@ public class UserServiceController {
         }
     }
 
+    //Ideally this would be a GET with session info used to confirm user is following tweeter
+    @RequestMapping(method= POST, value = "/tweet/comments")
+    public ResponseEntity getCommentsAssociatedWithTweet(@RequestBody HashMap<String, String> userData){
+        try {
+            return new ResponseEntity(this.userService.getCommentsAssociatedWithTweetIfFollowing(userData.get("requesterName"), userData.get("tweetId")), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
     //TODO what if wrong data passed?
     @RequestMapping(method= POST, value = "/new/user")
     public User createAccount(@RequestBody HashMap<String,String> userData){

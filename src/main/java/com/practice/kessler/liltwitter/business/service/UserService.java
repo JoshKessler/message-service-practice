@@ -15,6 +15,7 @@ import javax.swing.text.html.Option;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -118,25 +119,12 @@ public class UserService {
 
     //TODO change string return to error, update datetime issue
     public Comment comment(String tweetId, String message, String commenterUserName) throws TweetNotFoundException, RelationshipNotFoundException, UserNotFoundException {
-        User commenter = userRepository.findByUserName(commenterUserName);
-        if (commenter == null){
-            throw new UserNotFoundException("Your username not found.");
-        }
-        Optional<Tweet> tweet = tweetRepository.findById(Long.parseLong(tweetId));
-        if (tweet.isPresent()) {
-            long tweeterUserId = tweet.get().getUserId();
-            Optional<User> tweeter = userRepository.findById(tweeterUserId);
-            if (tweeter.isPresent()) {
-                if (commenter.getFollowedUsers().contains(tweeter.get())) {
-                    Comment comment = new Comment();
-                    comment.setOriginalTweetId(Long.parseLong(tweetId));
-                    comment.setWrittenById(commenter.getId());
-                    //comment.setTimestamp(Time.now());
-                    return commentRepository.save(comment);
-                } else throw new RelationshipNotFoundException("You can't comment on this tweet because you're not following" + tweeter.get().getUserName() + ".");
-            }
-            else throw new RuntimeException("Well this is awkward. We found the tweet but its author seems to have gone missing and your comment didn't get posted.");
-        } else throw new TweetNotFoundException("No tweet found with that ID.");
+        HashMap<String, Long> userIds = validateRelationship(commenterUserName, tweetId);
+        Comment comment = new Comment();
+        comment.setOriginalTweetId(Long.parseLong(tweetId));
+        comment.setWrittenById(userIds.get("commenterId"));
+        //comment.setTimestamp(Time.now());
+        return commentRepository.save(comment);
     }
 
     public List<User> getAllUsers(){
@@ -171,6 +159,32 @@ public class UserService {
             }
         }
         return result;
+    }
+
+    public List<Comment> getCommentsAssociatedWithTweetIfFollowing(String requesterName, String tweetId) throws UserNotFoundException, RelationshipNotFoundException, TweetNotFoundException {
+        validateRelationship(requesterName, tweetId);
+        return getCommentsAssociatedWithTweet(tweetId);
+    }
+
+    private HashMap<String, Long> validateRelationship(String commenterUserName, String tweetId) throws UserNotFoundException, RelationshipNotFoundException, TweetNotFoundException {
+        HashMap<String, Long> userIds = new HashMap<>();
+        User commenter = userRepository.findByUserName(commenterUserName);
+        if (commenter == null){
+            throw new UserNotFoundException("Your username not found.");
+        }
+        Optional<Tweet> tweet = tweetRepository.findById(Long.parseLong(tweetId));
+        if (tweet.isPresent()) {
+            long tweeterUserId = tweet.get().getUserId();
+            Optional<User> tweeter = userRepository.findById(tweeterUserId);
+            if (tweeter.isPresent()) {
+                if (commenter.getFollowedUsers().contains(tweeter.get())) {
+                    userIds.put("commenterId", commenter.getId());
+                    userIds.put("tweeterId", tweeterUserId);
+                    return userIds;
+                } else throw new RelationshipNotFoundException("You can't comment on this tweet because you're not following" + tweeter.get().getUserName() + ".");
+            }
+            else throw new RuntimeException("Well this is awkward. We found the tweet but its author seems to have gone missing and your comment didn't get posted.");
+        } else throw new TweetNotFoundException("No tweet found with that ID.");
     }
 
 }
