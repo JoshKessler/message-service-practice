@@ -54,6 +54,15 @@ public class UserServiceController {
         }
     }
 
+    @RequestMapping(method= GET, value = "/user/{userName}")
+    public ResponseEntity getUser(@PathVariable(value="userName")String userName){
+        try {
+            return new ResponseEntity(this.userService.getUser(userName), HttpStatus.OK);
+        } catch (UserNotFoundException e) {
+            return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
     //TODO what if wrong data passed?
     @RequestMapping(method= POST, value = "/new/user")
     public User createAccount(@RequestBody HashMap<String,String> userData){

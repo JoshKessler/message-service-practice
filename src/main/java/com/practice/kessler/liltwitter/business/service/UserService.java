@@ -48,6 +48,15 @@ public class UserService {
         throw new UserNotFoundException("No user with that username found.");
     }
 
+    public User getUser(String userName) throws UserNotFoundException {
+        List<Tweet> usersTweets = new ArrayList<>();
+        User user = userRepository.findByUserName(userName);
+        if (user == null){
+            throw new UserNotFoundException("No user with that username found.");
+        }
+        return user;
+    }
+
     public List<User> getFollowers(String username) throws UserNotFoundException {
         List<User> followers = new ArrayList<>();
         User user = userRepository.findByUserName(username);
