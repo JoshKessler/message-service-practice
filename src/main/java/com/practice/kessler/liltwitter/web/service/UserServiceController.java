@@ -4,6 +4,7 @@ import com.practice.kessler.liltwitter.business.service.UserNotFoundException;
 import com.practice.kessler.liltwitter.business.service.UserService;
 import com.practice.kessler.liltwitter.data.entity.Tweet;
 import com.practice.kessler.liltwitter.data.entity.User;
+import com.practice.kessler.liltwitter.data.entity.UserRelationship;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -53,8 +54,36 @@ public class UserServiceController {
         }
     }
 
+    //TODO what if wrong data passed?
     @RequestMapping(method= POST, value = "/new/user")
     public User createAccount(@RequestBody HashMap<String,String> userData){
         return userService.createAccount(userData.get("username"), userData.get("name"), userData.get("location"));
+    }
+
+    @RequestMapping(method= POST, value = "/follow")
+    public ResponseEntity follow(@RequestBody HashMap<String,String> userData){
+        try {
+            return new ResponseEntity(this.userService.follow(userData.get("followerName"), userData.get("followedName")), HttpStatus.OK);
+        } catch (UserNotFoundException e) {
+            return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @RequestMapping(method= POST, value = "/comment")
+    public ResponseEntity comment(@RequestBody HashMap<String,String> userData){
+        try {
+            return new ResponseEntity(this.userService.comment(userData.get("tweetId"), userData.get("message"), userData.get("commenterUserName")), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @RequestMapping(method= POST, value = "/tweet")
+    public ResponseEntity tweet(@RequestBody HashMap<String,String> userData){
+        try {
+            return new ResponseEntity(this.userService.tweet(userData.get("userName"), userData.get("message"), userData.get("timestampe")), HttpStatus.OK);
+        } catch (UserNotFoundException e) {
+            return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
 }
