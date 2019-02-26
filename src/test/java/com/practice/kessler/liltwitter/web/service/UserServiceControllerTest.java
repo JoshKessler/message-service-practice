@@ -1,6 +1,10 @@
 package com.practice.kessler.liltwitter.web.service;
 
+import com.practice.kessler.liltwitter.business.service.TweetNotFoundException;
+import com.practice.kessler.liltwitter.business.service.UserNotFoundException;
 import com.practice.kessler.liltwitter.business.service.UserService;
+import com.practice.kessler.liltwitter.data.entity.Comment;
+import com.practice.kessler.liltwitter.data.entity.Tweet;
 import com.practice.kessler.liltwitter.data.entity.User;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,6 +15,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+
+import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebMvcTest(UserServiceController.class)
@@ -27,38 +33,116 @@ public class UserServiceControllerTest {
     }
 
     @Test
-    public void testGetSpecificUser(){
-        //user exists
-        //user doesn't exist
+    public void testGetSpecificUser() throws UserNotFoundException {
+        User userExpected = userService.getUser("Jkessl204");
+        assertEquals("Jkessl204", userExpected.getUserName());
+
+        try {
+            User noUserExpected = userService.getUser("nobody");
+            fail();
+        } catch(UserNotFoundException e){
+            assertTrue(e.getMessage().contains("User not found"));
+        }
     }
 
     @Test
-    public void testGetUsersFollowers(){
-        //user doesn't exist
-        //0 followers
-        //1 follower
-        //1+ folowers
+    public void testGetUsersFollowers() throws UserNotFoundException {
+
+        try {
+            List<User> noUserExpected = userService.getFollowers("nobody");
+            fail();
+        } catch(UserNotFoundException e){
+            assertTrue(e.getMessage().contains("User not found"));
+        }
+
+        List<User> zeroFollowers = userService.getFollowers("");
+        assertEquals(0, zeroFollowers.size());
+
+        List<User> userWithFollowers = userService.getFollowers("");
+        assertEquals(3, userWithFollowers.size());
+        boolean foundfirstFollower = false;
+        boolean foundSecondFollower = false;
+        for (User user : userWithFollowers) {
+            if (user.getUserName().equals("firstfollower")) {
+                foundfirstFollower = true;
+            }
+            else if (user.getUserName().equals("secondfoll")) {
+                foundSecondFollower = true;
+            }
+        }
+        assertTrue(foundfirstFollower && foundSecondFollower);
     }
 
     @Test
-    public void testGetUsersFollowed(){
-        //user doesn't exist
-        //0 followed
-        //1 followed
-        //1+ followed
+    public void testGetUsersFollowed() throws UserNotFoundException {
+        try {
+            List<User> noUserExpected = userService.getFollowedUsers("nobody");
+            fail();
+        } catch(UserNotFoundException e){
+            assertTrue(e.getMessage().contains("User not found"));
+        }
+
+        List<User> zeroFollowed = userService.getFollowedUsers("");
+        assertEquals(0, zeroFollowed.size());
+
+        List<User> userWithFollowed = userService.getFollowedUsers("");
+        assertEquals(3, userWithFollowed.size());
+        boolean foundfirstFollowed = false;
+        boolean foundSecondFollowed = false;
+        for (User user : userWithFollowed) {
+            if (user.getUserName().equals("firstfollower")) {
+                foundfirstFollowed = true;
+            }
+            else if (user.getUserName().equals("secondfoll")) {
+                foundSecondFollowed = true;
+            }
+        }
+        assertTrue(foundfirstFollowed && foundSecondFollowed);
     }
 
     @Test
-    public void testGetUsersTweets(){
-        //user doesn't exist
-        //0 tweets
-        //1 tweet
-        //1+ tweets
+    public void testGetUsersTweets() throws UserNotFoundException {
+        try {
+            List<Tweet> noUserExpected = userService.getUsersTweets("nobody");
+            fail();
+        } catch(UserNotFoundException e){
+            assertTrue(e.getMessage().contains("User not found"));
+        }
+
+        List<Tweet> zeroTweets = userService.getUsersTweets("");
+        assertEquals(0, zeroTweets.size());
+
+        List<Tweet> someTweets = userService.getUsersTweets("");
+        assertEquals(3, someTweets.size());
+        boolean foundfirstTweet = false;
+        boolean foundSecondTweet = false;
+        for (Tweet tweet : someTweets) {
+            if (tweet.getTweet().contains("firstfollower")) {
+                foundfirstTweet = true;
+            }
+            if (tweet.getTweet().contains("firstfollower")) {
+                foundSecondTweet = true;
+            }
+        }
+        assertTrue(foundfirstTweet && foundSecondTweet);
     }
 
     @Test
     public void testGetCommentsAssociatedWithTweet(){
-        //tweet doesn't exist
+        try {
+            List<Comment> noTweet = userService.getCommentsAssociatedWithTweet("000");
+            fail();
+        } catch(TweetNotFoundException e){
+            assertTrue(e.getMessage().contains("User not found"));
+        }
+        try {
+            List<Comment> noTweet = userService.getCommentsAssociatedWithTweet("000");
+            fail();
+        } catch(TweetNotFoundException e){
+            assertTrue(e.getMessage().contains("User not found"));
+        }
+
+
         //tweet exists and user doesn't follow original tweeter
         //tweet exists, user follows, 0 comments
         //1+ comments
