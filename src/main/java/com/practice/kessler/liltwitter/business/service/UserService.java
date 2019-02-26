@@ -11,6 +11,7 @@ import com.practice.kessler.liltwitter.data.repository.UserRepository;
 import org.apache.tomcat.jni.Time;
 import org.springframework.stereotype.Service;
 
+import javax.swing.text.html.Option;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -32,7 +33,7 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public List<Tweet> getUsersTweets(String userName){
+    public List<Tweet> getUsersTweets(String userName) throws UserNotFoundException {
         List<Tweet> usersTweets = new ArrayList<>();
         User user = userRepository.findByUserName(userName);
         if (user != null){
@@ -42,12 +43,12 @@ public class UserService {
                     usersTweets.add(t);
                 });
             }
+            return usersTweets;
         }
-
-        return usersTweets;
+        throw new UserNotFoundException("No user with that username found.");
     }
 
-    public List<User> getFollowers(String username){
+    public List<User> getFollowers(String username) throws UserNotFoundException {
         List<User> followers = new ArrayList<>();
         User user = userRepository.findByUserName(username);
         if (user != null) {
@@ -60,31 +61,35 @@ public class UserService {
                     }
                 });
             }
+            return followers;
         }
-        return followers;
+        throw new UserNotFoundException("No user with that username found.");
     }
 
-    //TODO decide if this should return UserRelationship
-    public UserRelationship follow(String followerName, String followedName){
+    public UserRelationship follow(String followerName, String followedName) throws UserNotFoundException {
         User follower = userRepository.findByUserName(followerName);
         User followed = userRepository.findByUserName(followedName);
-        if (follower != null && followed != null) {
-            UserRelationship newFollow = new UserRelationship();
-            newFollow.setFollowedId(followed.getId());
-            newFollow.setFollowerId(follower.getId());
-            return userRelationshipsRepository.save(newFollow);
+        if (follower == null){
+            throw new UserNotFoundException("No user with the username " + followerName + " found.");
         }
-        return null;
+        if (followed == null){
+            throw new UserNotFoundException("No user with the username " + followedName + " found.");
+        }
+
+        UserRelationship newFollow = new UserRelationship();
+        newFollow.setFollowedId(followed.getId());
+        newFollow.setFollowerId(follower.getId());
+        return userRelationshipsRepository.save(newFollow);
     }
 
-    //TODO what should this return, and update datetime issue
-    public Tweet tweet(String userName, String message, String timestamp){
+    //TODO figure out datetime issue
+    public Tweet tweet(String userName, String message, String timestamp) throws UserNotFoundException {
         if (timestamp == null){
             timestamp = DATE_FORMAT.format(Time.now());
         }
         User user = userRepository.findByUserName(userName);
         if (user == null){
-            return null;
+            throw new UserNotFoundException("Your username not found.");
         }
         Tweet tweet = new Tweet();
         //tweet.setTimestamp(timestamp);
@@ -103,8 +108,11 @@ public class UserService {
     }
 
     //TODO change string return to error, update datetime issue
-    public Comment comment(String tweetId, String message, String commenterUserName) {
+    public Comment comment(String tweetId, String message, String commenterUserName) throws TweetNotFoundException, RelationshipNotFoundException, UserNotFoundException {
         User commenter = userRepository.findByUserName(commenterUserName);
+        if (commenter == null){
+            throw new UserNotFoundException("Your username not found.");
+        }
         Optional<Tweet> tweet = tweetRepository.findById(Long.parseLong(tweetId));
         if (tweet.isPresent()) {
             long tweeterUserId = tweet.get().getUserId();
@@ -116,12 +124,10 @@ public class UserService {
                     comment.setWrittenById(commenter.getId());
                     //comment.setTimestamp(Time.now());
                     return commentRepository.save(comment);
-                    //"Can't comment on someone you're not following"
-                } else return null;
+                } else throw new RelationshipNotFoundException("You can't comment on this tweet because you're not following" + tweeter.get().getUserName() + ".");
             }
-
-            else return null; //"something went wrong. found tweet, but can't locate its author"
-        } else return null; //"No tweet with that ID"
+            else throw new RuntimeException("Well this is awkward. We found the tweet but its author seems to have gone missing and your comment didn't get posted.");
+        } else throw new TweetNotFoundException("No tweet found with that ID.");
     }
 
     public List<User> getAllUsers(){
@@ -133,22 +139,28 @@ public class UserService {
         return users;
     }
 
-
-    public List<User> getFollowedUsers(String userName) {
+    public List<User> getFollowedUsers(String userName) throws UserNotFoundException {
         List<User> following = new ArrayList<>();
         User user = userRepository.findByUserName(userName);
-        if (user != null) {
-            following.addAll(user.getFollowedUsers());
-            }
+        if (user == null){
+            throw new UserNotFoundException("That username not found");
+        }
+        following.addAll(user.getFollowedUsers());
         return following;
     }
 
-    public List<Comment> getCommentsAssociatedWithTweet(String tweetId){
+    public List<Comment> getCommentsAssociatedWithTweet(String tweetId) throws TweetNotFoundException {
         List<Comment> result = new ArrayList<>();
         Iterable<Comment> comments = commentRepository.findAllByOriginalTweetId(Long.parseLong(tweetId));
         comments.forEach(comment -> {
             result.add(comment);
         });
+        if (result.isEmpty()){
+            Optional<Tweet> tweet = tweetRepository.findById(Long.parseLong(tweetId));
+            if (!tweet.isPresent()){
+                throw new TweetNotFoundException("No tweet with that ID found.");
+            }
+        }
         return result;
     }
 
