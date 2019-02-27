@@ -150,13 +150,12 @@ public class UserService {
     }
 
     public List<User> getFollowedUsers(String userName) throws UserNotFoundException {
-        List<User> following = new ArrayList<>();
         User user = userRepository.findByUserName(userName);
         if (user == null){
             throw new UserNotFoundException("That username not found");
         }
-        following.addAll(user.getFollowedUsers());
-        return following;
+
+        return getFollowedUsers(user);
     }
 
     public List<Comment> getCommentsAssociatedWithTweet(String tweetId) throws TweetNotFoundException {
@@ -200,10 +199,23 @@ public class UserService {
         return tweetsWithComments;
     }
 
+    private List<User> getFollowedUsers(User user){
+        List<UserRelationship> relationships = userRelationshipsRepository.findAllByFollowerId(user.getId());
+        List<User> result = new ArrayList<>();
+        relationships.forEach(r ->{
+            Optional<User> opt = userRepository.findById(r.getFollowedId());
+            if (opt.isPresent()){
+                result.add(opt.get());
+            }
+        });
+        return result;
+    }
+
     public boolean validateUserRelationship (String requesterName, String posterUserName){
         User requester = userRepository.findByUserName(requesterName); //called after another method checks for null so don't check here
         User poster = userRepository.findByUserName(posterUserName);
-        return requester.getFollowedUsers().contains(poster);
+
+        return getFollowedUsers(requester).contains(poster);
     }
 
     private HashMap<String, Long> validateTweetRelationship(String commenterUserName, String tweetId) throws UserNotFoundException, RelationshipNotFoundException, TweetNotFoundException {
@@ -217,7 +229,7 @@ public class UserService {
             long tweeterUserId = tweet.get().getUserId();
             Optional<User> tweeter = userRepository.findById(tweeterUserId);
             if (tweeter.isPresent()) {
-                if (commenter.getFollowedUsers().contains(tweeter.get())) {
+                if (getFollowedUsers(commenter).contains(tweeter.get())) {
                     userIds.put("commenterId", commenter.getId());
                     userIds.put("tweeterId", tweeterUserId);
                     return userIds;

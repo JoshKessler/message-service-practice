@@ -16,10 +16,6 @@ public class User {
     private String name;
     @Column(name = "LOCATION")
     private String location;
-    @ManyToMany
-    @JoinTable(name="USER_RELATIONSHIPS", joinColumns = @JoinColumn(name="FOLLOWER_ID"),
-            inverseJoinColumns = @JoinColumn(name="FOLLOWED_ID"))
-    private Set<User> followedUsers;
 
     public long getId() {
         return id;
@@ -51,14 +47,6 @@ public class User {
 
     public void setLocation(String location) {
         this.location = location;
-    }
-
-    public Set<User> getFollowedUsers() {
-        return followedUsers;
-    }
-
-    public void setFollowedUsers(Set<User> followedUsers) {
-        this.followedUsers = followedUsers;
     }
 
 }
