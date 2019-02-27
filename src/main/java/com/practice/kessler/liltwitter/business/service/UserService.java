@@ -52,7 +52,7 @@ public class UserService {
             }
             return usersTweets;
         }
-        throw new UserNotFoundException("No user with that username found.");
+        throw new UserNotFoundException("No user with username " +userName + " found.");
     }
 
     public User getUser(String userName) throws UserNotFoundException {
