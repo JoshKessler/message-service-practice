@@ -11,13 +11,9 @@ import com.practice.kessler.liltwitter.data.repository.UserRepository;
 import org.apache.tomcat.jni.Time;
 import org.springframework.stereotype.Service;
 
-import javax.swing.text.html.Option;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class UserService {
@@ -119,7 +115,7 @@ public class UserService {
 
     //TODO change string return to error, update datetime issue
     public Comment comment(String tweetId, String message, String commenterUserName) throws TweetNotFoundException, RelationshipNotFoundException, UserNotFoundException {
-        HashMap<String, Long> userIds = validateRelationship(commenterUserName, tweetId);
+        HashMap<String, Long> userIds = validateTweetRelationship(commenterUserName, tweetId);
         Comment comment = new Comment();
         comment.setOriginalTweetId(Long.parseLong(tweetId));
         comment.setWrittenById(userIds.get("commenterId"));
@@ -162,11 +158,38 @@ public class UserService {
     }
 
     public List<Comment> getCommentsAssociatedWithTweetIfFollowing(String requesterName, String tweetId) throws UserNotFoundException, RelationshipNotFoundException, TweetNotFoundException {
-        validateRelationship(requesterName, tweetId);
+        validateTweetRelationship(requesterName, tweetId);
         return getCommentsAssociatedWithTweet(tweetId);
     }
 
-    private HashMap<String, Long> validateRelationship(String commenterUserName, String tweetId) throws UserNotFoundException, RelationshipNotFoundException, TweetNotFoundException {
+    //can return either list of tweets or list of tweets mapped to associated comments
+    public HashMap<Tweet, List<Comment>> getAllUserContentWithRequester(String requesterName, String posterUserName) throws UserNotFoundException {
+        User poster = userRepository.findByUserName(posterUserName);
+        if (poster == null ){
+            throw new UserNotFoundException("No user with the username " + posterUserName + " found.");
+        }
+        User requester = userRepository.findByUserName(requesterName);
+        List<Tweet> usersTweets = getUsersTweets(posterUserName);
+        HashMap<Tweet, List<Comment>> tweetsWithComments = new HashMap<>();
+        usersTweets.forEach(tweet -> {
+            try {
+                List<Comment> comments = getCommentsAssociatedWithTweet(String.valueOf(tweet.getId()));
+                tweetsWithComments.put(tweet, comments);
+            } catch (TweetNotFoundException e) {
+                e.printStackTrace();
+                tweetsWithComments.put(tweet, new ArrayList<>());
+            }
+        });
+        return tweetsWithComments;
+    }
+
+    public boolean validateUserRelationship (String requesterName, String posterUserName){
+        User requester = userRepository.findByUserName(requesterName); //called after another method checks for null so don't check here
+        User poster = userRepository.findByUserName(posterUserName);
+        return requester.getFollowedUsers().contains(poster);
+    }
+
+    private HashMap<String, Long> validateTweetRelationship(String commenterUserName, String tweetId) throws UserNotFoundException, RelationshipNotFoundException, TweetNotFoundException {
         HashMap<String, Long> userIds = new HashMap<>();
         User commenter = userRepository.findByUserName(commenterUserName);
         if (commenter == null){
@@ -185,6 +208,14 @@ public class UserService {
             }
             else throw new RuntimeException("Well this is awkward. We found the tweet but its author seems to have gone missing and your comment didn't get posted.");
         } else throw new TweetNotFoundException("No tweet found with that ID.");
+    }
+
+    public Tweet getSpecificTweet(long id) throws TweetNotFoundException {
+        Optional<Tweet> tweet = tweetRepository.findById(id);
+        if (tweet.isPresent()){
+            return tweet.get();
+        }
+        throw new TweetNotFoundException("No tweet with that ID found.");
     }
 
 }

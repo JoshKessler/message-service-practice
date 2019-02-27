@@ -73,6 +73,31 @@ public class UserServiceController {
         }
     }
 
+    //TODO should differentiate between returning a tweet list because requester not found and because requester found but not following
+    public ResponseEntity getAllUserContentWithRequester(@RequestBody HashMap<String, String> userData){
+        try {
+            this.userService.getUser(userData.get("requesterName"));
+            if (this.userService.validateUserRelationship(userData.get("requesterName"), userData.get("posterUserName"))){
+                return new ResponseEntity(this.userService.getAllUserContentWithRequester(userData.get("requesterName"), userData.get("posterUserName")), HttpStatus.OK);
+            } else{
+                //requester not following, so return list of tweets without comments
+                return returnTweetListEntity(userData.get("posterUserName"));
+            }
+        } catch (UserNotFoundException e) {
+            //requester not found, so return list of requested user's tweets without comments
+            return returnTweetListEntity(userData.get("posterUserName")); //
+        }
+    }
+
+    private ResponseEntity returnTweetListEntity(String userName){
+        try {
+
+            return new ResponseEntity(this.userService.getUsersTweets(userName), HttpStatus.OK);
+        } catch (UserNotFoundException err) {
+            return new ResponseEntity(err.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
     //TODO what if wrong data passed?
     @RequestMapping(method= POST, value = "/new/user")
     public User createAccount(@RequestBody HashMap<String,String> userData){
@@ -105,4 +130,5 @@ public class UserServiceController {
             return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
+
 }
