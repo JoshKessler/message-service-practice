@@ -1,5 +1,6 @@
 package com.practice.kessler.liltwitter.web.service;
 
+import com.practice.kessler.liltwitter.business.service.RelationshipAlreadyExistsException;
 import com.practice.kessler.liltwitter.business.service.UserNotFoundException;
 import com.practice.kessler.liltwitter.business.service.UserService;
 import com.practice.kessler.liltwitter.data.entity.Tweet;
@@ -118,6 +119,8 @@ public class UserServiceController {
         try {
             return new ResponseEntity(this.userService.follow(userData.get("followerName"), userData.get("followedName")), HttpStatus.OK);
         } catch (UserNotFoundException e) {
+            return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (RelationshipAlreadyExistsException e){
             return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }

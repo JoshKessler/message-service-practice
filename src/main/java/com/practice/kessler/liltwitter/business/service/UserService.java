@@ -73,14 +73,20 @@ public class UserService {
         throw new UserNotFoundException("No user with that username found.");
     }
 
-    public UserRelationship follow(String followerName, String followedName) throws UserNotFoundException {
+    public UserRelationship follow(String followerName, String followedName) throws UserNotFoundException, RelationshipAlreadyExistsException {
         User follower = userRepository.findByUserName(followerName);
         User followed = userRepository.findByUserName(followedName);
         if (follower == null){
-            throw new UserNotFoundException("No user with the username " + followerName + " found.");
+            throw new UserNotFoundException("Your username, " + followerName + ", not found.");
         }
         if (followed == null){
             throw new UserNotFoundException("No user with the username " + followedName + " found.");
+        }
+
+        //this should really be enforced by database schema instead
+        UserRelationship userRelationship = userRelationshipsRepository.findByFollowerIdAndFollowedId(follower.getId(), followed.getId());
+        if (userRelationship != null){
+            throw new RelationshipAlreadyExistsException("You're already following this user.");
         }
 
         UserRelationship newFollow = new UserRelationship();

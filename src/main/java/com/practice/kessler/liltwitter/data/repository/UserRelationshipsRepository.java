@@ -10,5 +10,5 @@ import java.util.List;
 @Repository
 public interface UserRelationshipsRepository extends CrudRepository <UserRelationship, Long>{
     List<UserRelationship> findAllByFollowedId(Long followed);
-
+    UserRelationship findByFollowerIdAndFollowedId(Long followed, Long follower);
 }
