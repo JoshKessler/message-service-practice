@@ -106,8 +106,10 @@ public class UserServiceController {
     private void throwInputError(List<String> expectedFieldNames, List<String> expectedNumericFieldNames) throws InvalidRequestDataException {
         StringBuilder sb = new StringBuilder("Invalid input. The following fields must all be present and non-empty: ");
         sb.append(expectedFieldNames.toString());
-        sb.append(". The following fields must also be integers: ");
-        sb.append(expectedNumericFieldNames.toString());
+        if (expectedNumericFieldNames.size() > 0){
+            sb.append(". The following fields must also be integers: ");
+            sb.append(expectedNumericFieldNames.toString());
+        }
         throw new InvalidRequestDataException(sb.toString());
     }
 
@@ -148,12 +150,20 @@ public class UserServiceController {
     //TODO what if wrong data passed?
     @RequestMapping(method= POST, value = "/new/user")
     public ResponseEntity createAccount(@RequestBody HashMap<String,String> userData){
-        ArrayList expectedFields = new ArrayList<String>(List.of("username", "name", "location"));
+        ArrayList expectedFields = new ArrayList<String>(List.of("username"));
+        //these fields are allowed to be null but should not be empty
+        if ((userData.get("name")) != null){
+            expectedFields.add("name");
+        }
+        if ((userData.get("location")) != null){
+            expectedFields.add("location");
+        }
+
         ArrayList numericFields = new ArrayList<String>();
         try {
             checkInputs(userData, expectedFields, numericFields);
         } catch (InvalidRequestDataException e) {
-            return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity("Invalid input. Username is a mandatory field, and name and location, if present, must not be empty.", HttpStatus.BAD_REQUEST);
         }
         try {
             return new ResponseEntity(userService.createAccount(userData.get("username"), userData.get("name"), userData.get("location")), HttpStatus.OK);
