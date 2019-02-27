@@ -42,7 +42,7 @@ public class UserService {
 
     public List<Tweet> getUsersTweets(String userName) throws UserNotFoundException {
         List<Tweet> usersTweets = new ArrayList<>();
-        User user = userRepository.findByUserName(userName);
+        User user = userRepository.findByUserNameIgnoreCase(userName);
         if (user != null){
             Iterable<Tweet> tweets = tweetRepository.findTweetByUserId(user.getId());
             if(tweets != null){
@@ -57,7 +57,7 @@ public class UserService {
 
     public User getUser(String userName) throws UserNotFoundException {
         List<Tweet> usersTweets = new ArrayList<>();
-        User user = userRepository.findByUserName(userName);
+        User user = userRepository.findByUserNameIgnoreCase(userName);
         if (user == null){
             throw new UserNotFoundException("No user with that username found.");
         }
@@ -66,7 +66,7 @@ public class UserService {
 
     public List<User> getFollowers(String username) throws UserNotFoundException {
         List<User> followers = new ArrayList<>();
-        User user = userRepository.findByUserName(username);
+        User user = userRepository.findByUserNameIgnoreCase(username);
         if (user != null) {
             Iterable<UserRelationship> relationships = userRelationshipsRepository.findAllByFollowedId(user.getId());
             if (relationships != null) {
@@ -84,8 +84,8 @@ public class UserService {
 
     //TODO user can currently follow self (this should be enforced in DB schema instead)
     public UserRelationship follow(String requesterName, String followedName) throws UserNotFoundException, RelationshipAlreadyExistsException {
-        User follower = userRepository.findByUserName(requesterName);
-        User followed = userRepository.findByUserName(followedName);
+        User follower = userRepository.findByUserNameIgnoreCase(requesterName);
+        User followed = userRepository.findByUserNameIgnoreCase(followedName);
         if (follower == null){
             throw new UserNotFoundException("Your username, " + requesterName + ", not found.");
         }
@@ -108,7 +108,7 @@ public class UserService {
     public Tweet tweet(String userName, String message) throws UserNotFoundException {
         ZonedDateTime submittedTime = ZonedDateTime.now();
 
-        User user = userRepository.findByUserName(userName);
+        User user = userRepository.findByUserNameIgnoreCase(userName);
         if (user == null){
             throw new UserNotFoundException("Your username not found.");
         }
@@ -148,7 +148,7 @@ public class UserService {
     }
 
     public List<User> getFollowedUsers(String userName) throws UserNotFoundException {
-        User user = userRepository.findByUserName(userName);
+        User user = userRepository.findByUserNameIgnoreCase(userName);
         if (user == null){
             throw new UserNotFoundException("That username not found");
         }
@@ -178,11 +178,11 @@ public class UserService {
 
     //can return either list of tweets or list of tweets mapped to associated comments
     public List<TweetWithComments> getAllUserContentWithRequester(String requesterName, String posterUserName) throws UserNotFoundException {
-        User poster = userRepository.findByUserName(posterUserName);
+        User poster = userRepository.findByUserNameIgnoreCase(posterUserName);
         if (poster == null ){
             throw new UserNotFoundException("No user with the username " + posterUserName + " found.");
         }
-        User requester = userRepository.findByUserName(requesterName);
+        User requester = userRepository.findByUserNameIgnoreCase(requesterName);
         List<Tweet> usersTweets = getUsersTweets(posterUserName);
         List<TweetWithComments> tweetsWithComments = new ArrayList<>();
         usersTweets.forEach(tweet -> {
@@ -210,15 +210,15 @@ public class UserService {
     }
 
     public boolean validateUserRelationship (String requesterName, String posterUserName){
-        User requester = userRepository.findByUserName(requesterName); //called after another method checks for null so don't check here
-        User poster = userRepository.findByUserName(posterUserName);
+        User requester = userRepository.findByUserNameIgnoreCase(requesterName); //called after another method checks for null so don't check here
+        User poster = userRepository.findByUserNameIgnoreCase(posterUserName);
 
         return getFollowedUsers(requester).contains(poster);
     }
 
     private HashMap<String, Long> validateTweetRelationship(String commenterUserName, String tweetId) throws UserNotFoundException, RelationshipNotFoundException, TweetNotFoundException {
         HashMap<String, Long> userIds = new HashMap<>();
-        User commenter = userRepository.findByUserName(commenterUserName);
+        User commenter = userRepository.findByUserNameIgnoreCase(commenterUserName);
         if (commenter == null){
             throw new UserNotFoundException("Your username not found.");
         }
