@@ -73,6 +73,7 @@ public class UserService {
         throw new UserNotFoundException("No user with that username found.");
     }
 
+    //TODO user can currently follow self (this should be enforced in DB schema instead)
     public UserRelationship follow(String followerName, String followedName) throws UserNotFoundException, RelationshipAlreadyExistsException {
         User follower = userRepository.findByUserName(followerName);
         User followed = userRepository.findByUserName(followedName);
