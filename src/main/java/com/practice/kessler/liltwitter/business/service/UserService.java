@@ -58,10 +58,10 @@ public class UserService {
         List<User> followers = new ArrayList<>();
         User user = userRepository.findByUserName(username);
         if (user != null) {
-            Iterable<Long> followerIds = userRelationshipsRepository.findAllByFollowedId(user.getId());
-            if (followerIds != null) {
-                followerIds.forEach(id -> {
-                    Optional<User> follower = userRepository.findById(id);
+            Iterable<UserRelationship> relationships = userRelationshipsRepository.findAllByFollowedId(user.getId());
+            if (relationships != null) {
+                relationships.forEach(r -> {
+                    Optional<User> follower = userRepository.findById(r.getFollowerId());
                     if (follower.isPresent()) {
                         followers.add(follower.get());
                     }
