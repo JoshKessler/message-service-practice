@@ -115,6 +115,13 @@ public class UserServiceController {
     //TODO should differentiate between returning a tweet list because requester not found and because requester found but not following
     @RequestMapping(method= POST, value = "/allUserContent")
     public ResponseEntity getAllUserContentWithRequester(@RequestBody HashMap<String, String> userData){
+        ArrayList expectedFields = new ArrayList<String>(List.of("requesterName", "posterUserName"));
+        ArrayList numericFields = new ArrayList<String>();
+        try {
+            checkInputs(userData, expectedFields, numericFields);
+        } catch (InvalidRequestDataException e) {
+            return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
         try {
             this.userService.getUser(userData.get("requesterName"));
             if (this.userService.validateUserRelationship(userData.get("requesterName"), userData.get("posterUserName"))){
@@ -132,7 +139,6 @@ public class UserServiceController {
     //helper method
     private ResponseEntity returnTweetListEntity(String userName){
         try {
-
             return new ResponseEntity(this.userService.getUsersTweets(userName), HttpStatus.OK);
         } catch (UserNotFoundException err) {
             return new ResponseEntity(err.getMessage(), HttpStatus.BAD_REQUEST);
@@ -142,6 +148,13 @@ public class UserServiceController {
     //TODO what if wrong data passed?
     @RequestMapping(method= POST, value = "/new/user")
     public ResponseEntity createAccount(@RequestBody HashMap<String,String> userData){
+        ArrayList expectedFields = new ArrayList<String>(List.of("username", "name", "location"));
+        ArrayList numericFields = new ArrayList<String>();
+        try {
+            checkInputs(userData, expectedFields, numericFields);
+        } catch (InvalidRequestDataException e) {
+            return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
         try {
             return new ResponseEntity(userService.createAccount(userData.get("username"), userData.get("name"), userData.get("location")), HttpStatus.OK);
         } catch (Exception e){
@@ -154,6 +167,13 @@ public class UserServiceController {
 
     @RequestMapping(method= POST, value = "/follow")
     public ResponseEntity follow(@RequestBody HashMap<String,String> userData){
+        ArrayList expectedFields = new ArrayList<String>(List.of("followerName", "followedName"));
+        ArrayList numericFields = new ArrayList<String>();
+        try {
+            checkInputs(userData, expectedFields, numericFields);
+        } catch (InvalidRequestDataException e) {
+            return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
         try {
             return new ResponseEntity(this.userService.follow(userData.get("followerName"), userData.get("followedName")), HttpStatus.OK);
         } catch (UserNotFoundException e) {
@@ -165,6 +185,13 @@ public class UserServiceController {
 
     @RequestMapping(method= POST, value = "/comment")
     public ResponseEntity comment(@RequestBody HashMap<String,String> userData){
+        ArrayList expectedFields = new ArrayList<String>(List.of("tweetId", "message", "commenterUserName"));
+        ArrayList numericFields = new ArrayList<String>(List.of("tweetId"));
+        try {
+            checkInputs(userData, expectedFields, numericFields);
+        } catch (InvalidRequestDataException e) {
+            return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
         try {
             return new ResponseEntity(this.userService.comment(userData.get("tweetId"), userData.get("message"), userData.get("commenterUserName")), HttpStatus.OK);
         } catch (Exception e) {
@@ -174,6 +201,13 @@ public class UserServiceController {
 
     @RequestMapping(method= POST, value = "/tweet")
     public ResponseEntity tweet(@RequestBody HashMap<String,String> userData){
+        ArrayList expectedFields = new ArrayList<String>(List.of("userName", "message"));
+        ArrayList numericFields = new ArrayList<String>();
+        try {
+            checkInputs(userData, expectedFields, numericFields);
+        } catch (InvalidRequestDataException e) {
+            return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
         try {
             return new ResponseEntity(this.userService.tweet(userData.get("userName"), userData.get("message")), HttpStatus.OK);
         } catch (UserNotFoundException e) {
