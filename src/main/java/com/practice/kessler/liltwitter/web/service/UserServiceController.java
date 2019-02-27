@@ -90,6 +90,7 @@ public class UserServiceController {
         }
     }
 
+    //helper method
     private ResponseEntity returnTweetListEntity(String userName){
         try {
 
@@ -101,8 +102,15 @@ public class UserServiceController {
 
     //TODO what if wrong data passed?
     @RequestMapping(method= POST, value = "/new/user")
-    public User createAccount(@RequestBody HashMap<String,String> userData){
-        return userService.createAccount(userData.get("username"), userData.get("name"), userData.get("location"));
+    public ResponseEntity createAccount(@RequestBody HashMap<String,String> userData){
+        try {
+            return new ResponseEntity(userService.createAccount(userData.get("username"), userData.get("name"), userData.get("location")), HttpStatus.OK);
+        } catch (Exception e){
+            if (e.getMessage().contains("constraint")){
+                return new ResponseEntity("It looks like this username is already taken.", HttpStatus.BAD_REQUEST);
+            }
+            else return new ResponseEntity("Uh-oh, something went wrong. Instead of spending all your time on social media, why don't you go explore nature?", HttpStatus.BAD_REQUEST);
+        }
     }
 
     @RequestMapping(method= POST, value = "/follow")
