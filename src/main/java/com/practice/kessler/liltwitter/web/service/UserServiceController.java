@@ -1,6 +1,7 @@
 package com.practice.kessler.liltwitter.web.service;
 
 import com.practice.kessler.liltwitter.business.service.RelationshipAlreadyExistsException;
+import com.practice.kessler.liltwitter.business.service.RelationshipNotFoundException;
 import com.practice.kessler.liltwitter.business.service.UserNotFoundException;
 import com.practice.kessler.liltwitter.business.service.UserService;
 import com.practice.kessler.liltwitter.data.entity.Tweet;
@@ -66,11 +67,16 @@ public class UserServiceController {
     }
 
     //Ideally this would be a GET with session info used to confirm user is following tweeter
+    //Should also change the message in the RelationshipNotFoundException so it differentiates between an attempt to make comments and view them
     @RequestMapping(method= POST, value = "/tweet/comments")
     public ResponseEntity getCommentsAssociatedWithTweet(@RequestBody HashMap<String, String> userData){
         try {
             return new ResponseEntity(this.userService.getCommentsAssociatedWithTweetIfFollowing(userData.get("requesterName"), userData.get("tweetId")), HttpStatus.OK);
-        } catch (Exception e) {
+        } catch (RelationshipNotFoundException e){
+            return new ResponseEntity("You can't view comments on this tweet because you're not following the original tweeter.", HttpStatus.BAD_REQUEST);
+        }
+
+        catch (Exception e) {
             return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
