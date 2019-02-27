@@ -83,11 +83,11 @@ public class UserService {
     }
 
     //TODO user can currently follow self (this should be enforced in DB schema instead)
-    public UserRelationship follow(String followerName, String followedName) throws UserNotFoundException, RelationshipAlreadyExistsException {
-        User follower = userRepository.findByUserName(followerName);
+    public UserRelationship follow(String requesterName, String followedName) throws UserNotFoundException, RelationshipAlreadyExistsException {
+        User follower = userRepository.findByUserName(requesterName);
         User followed = userRepository.findByUserName(followedName);
         if (follower == null){
-            throw new UserNotFoundException("Your username, " + followerName + ", not found.");
+            throw new UserNotFoundException("Your username, " + requesterName + ", not found.");
         }
         if (followed == null){
             throw new UserNotFoundException("No user with the username " + followedName + " found.");
@@ -105,7 +105,6 @@ public class UserService {
         return userRelationshipsRepository.save(newFollow);
     }
 
-    //TODO figure out datetime issue
     public Tweet tweet(String userName, String message) throws UserNotFoundException {
         ZonedDateTime submittedTime = ZonedDateTime.now();
 
@@ -120,7 +119,6 @@ public class UserService {
         return tweetRepository.save(tweet);
     }
 
-    //TODO if optional fields are null, do I need to check for that and not set them?
     public User createAccount(String userName, String actualName, String location){
         User user = new User();
         user.setUserName(userName);
@@ -129,14 +127,14 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    //TODO change string return to error, update datetime issue
     public Comment comment(String tweetId, String message, String commenterUserName) throws TweetNotFoundException, RelationshipNotFoundException, UserNotFoundException {
         HashMap<String, Long> userIds = validateTweetRelationship(commenterUserName, tweetId);
+        ZonedDateTime submittedTime = ZonedDateTime.now();
         Comment comment = new Comment();
         comment.setOriginalTweetId(Long.parseLong(tweetId));
         comment.setWrittenById(userIds.get("commenterId"));
         comment.setComment(message);
-        //comment.setTimestamp(Time.now());
+        comment.setTimestamp(submittedTime);
         return commentRepository.save(comment);
     }
 
