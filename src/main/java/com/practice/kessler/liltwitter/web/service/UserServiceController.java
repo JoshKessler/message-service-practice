@@ -116,7 +116,7 @@ public class UserServiceController {
 
 
     //TODO should differentiate between returning a tweet list because requester not found and because requester found but not following
-    @RequestMapping(method= POST, value = "/allUserContent")
+    @RequestMapping(method= POST, value = "/allContentFromUser")
     public ResponseEntity getAllUserContentWithRequester(@RequestBody HashMap<String, String> userData){
         ArrayList expectedFields = new ArrayList<String>(List.of("requesterName", "posterUserName"));
         ArrayList numericFields = new ArrayList<String>();
@@ -148,7 +148,6 @@ public class UserServiceController {
         }
     }
 
-    //TODO what if wrong data passed?
     @RequestMapping(method= POST, value = "/new/user")
     public ResponseEntity createAccount(@RequestBody HashMap<String,String> userData){
         ArrayList expectedFields = new ArrayList<String>(List.of("username"));
@@ -176,7 +175,7 @@ public class UserServiceController {
         }
     }
 
-    @RequestMapping(method= POST, value = "/follow")
+    @RequestMapping(method= POST, value = "/new/follow")
     public ResponseEntity follow(@RequestBody HashMap<String,String> userData){
         ArrayList expectedFields = new ArrayList<String>(List.of("followerName", "followedName"));
         ArrayList numericFields = new ArrayList<String>();
@@ -194,7 +193,7 @@ public class UserServiceController {
         }
     }
 
-    @RequestMapping(method= POST, value = "/comment")
+    @RequestMapping(method= POST, value = "/new/comment")
     public ResponseEntity comment(@RequestBody HashMap<String,String> userData){
         ArrayList expectedFields = new ArrayList<String>(List.of("tweetId", "message", "commenterUserName"));
         ArrayList numericFields = new ArrayList<String>(List.of("tweetId"));
@@ -210,7 +209,7 @@ public class UserServiceController {
         }
     }
 
-    @RequestMapping(method= POST, value = "/tweet")
+    @RequestMapping(method= POST, value = "new/tweet")
     public ResponseEntity tweet(@RequestBody HashMap<String,String> userData){
         ArrayList expectedFields = new ArrayList<String>(List.of("userName", "message"));
         ArrayList numericFields = new ArrayList<String>();
