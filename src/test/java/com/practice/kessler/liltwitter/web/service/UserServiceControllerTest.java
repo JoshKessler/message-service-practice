@@ -14,9 +14,14 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.*;
+import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebMvcTest(UserServiceController.class)
@@ -28,7 +33,16 @@ public class UserServiceControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    public void testGetAllUsers(){
+    public void testGetAllUsers() throws Exception {
+        User user = new User();
+        user.setUserName("josh");
+        User user2 = new User();
+        user.setUserName("josh2");
+        List<User> mockUserList = new ArrayList<>();
+        mockUserList.add(user);
+        mockUserList.add(user2);
+        given(userService.getAllUsers()).willReturn(mockUserList);
+        this.mockMvc.perform(get("/user")).andExpect(status().isOk()).andExpect(content().json("josh"));
         List<User> users = userService.getAllUsers();
     }
 
