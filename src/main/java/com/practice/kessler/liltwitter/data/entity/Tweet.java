@@ -1,6 +1,7 @@
 package com.practice.kessler.liltwitter.data.entity;
 
 import javax.persistence.*;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -16,7 +17,7 @@ public class Tweet {
     @Column(name = "MESSAGE_TEXT")
     private String tweet;
     @Column(name = "TIMESTAMP")
-    private Date timestamp;
+    private ZonedDateTime timestamp;
 
     public long getId() {
         return id;
@@ -42,13 +43,12 @@ public class Tweet {
         this.tweet = tweet;
     }
 
-    public Date getTimestamp() {
+    public ZonedDateTime getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(Date timestamp) {
+    public void setTimestamp(ZonedDateTime timestamp) {
         this.timestamp = timestamp;
     }
-//TODO figure out what to do about date format
 
 }

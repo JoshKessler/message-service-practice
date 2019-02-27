@@ -3,6 +3,7 @@ package com.practice.kessler.liltwitter.business.domain;
 import com.practice.kessler.liltwitter.data.entity.Comment;
 import com.practice.kessler.liltwitter.data.entity.Tweet;
 
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -11,7 +12,7 @@ public class TweetWithComments {
     private long id;
     private long userId;
     private String tweet;
-    private Date timestamp;
+    private ZonedDateTime timestamp;
     private List<Comment> comments;
 
     public TweetWithComments(Tweet tweet, List<Comment> comments) {
@@ -48,11 +49,11 @@ public class TweetWithComments {
         this.tweet = tweet;
     }
 
-    public Date getTimestamp() {
+    public ZonedDateTime getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(Date timestamp) {
+    public void setTimestamp(ZonedDateTime timestamp) {
         this.timestamp = timestamp;
     }
 

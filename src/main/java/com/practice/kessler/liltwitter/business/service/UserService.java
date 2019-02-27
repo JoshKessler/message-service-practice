@@ -9,11 +9,14 @@ import com.practice.kessler.liltwitter.data.repository.CommentRepository;
 import com.practice.kessler.liltwitter.data.repository.UserRelationshipsRepository;
 import com.practice.kessler.liltwitter.data.repository.TweetRepository;
 import com.practice.kessler.liltwitter.data.repository.UserRepository;
-import org.apache.tomcat.jni.Time;
 import org.springframework.stereotype.Service;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -22,7 +25,13 @@ public class UserService {
     private final UserRelationshipsRepository userRelationshipsRepository;
     private final TweetRepository tweetRepository;
     private final UserRepository userRepository;
-    private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+
+    public static DateTimeFormatter getDateFormat() {
+        return DATE_FORMAT;
+    }
 
     public UserService(CommentRepository commentRepository, UserRelationshipsRepository userRelationshipsRepository, TweetRepository tweetRepository, UserRepository userRepository) {
         this.commentRepository = commentRepository;
@@ -97,18 +106,17 @@ public class UserService {
     }
 
     //TODO figure out datetime issue
-    public Tweet tweet(String userName, String message, String timestamp) throws UserNotFoundException {
-        if (timestamp == null){
-            timestamp = DATE_FORMAT.format(Time.now());
-        }
+    public Tweet tweet(String userName, String message) throws UserNotFoundException {
+        ZonedDateTime submittedTime = ZonedDateTime.now();
+
         User user = userRepository.findByUserName(userName);
         if (user == null){
             throw new UserNotFoundException("Your username not found.");
         }
         Tweet tweet = new Tweet();
-        //tweet.setTimestamp(timestamp);
         tweet.setUserId(user.getId());
         tweet.setTweet(message);
+        tweet.setTimestamp(submittedTime);
         return tweetRepository.save(tweet);
     }
 
@@ -127,6 +135,7 @@ public class UserService {
         Comment comment = new Comment();
         comment.setOriginalTweetId(Long.parseLong(tweetId));
         comment.setWrittenById(userIds.get("commenterId"));
+        comment.setComment(message);
         //comment.setTimestamp(Time.now());
         return commentRepository.save(comment);
     }
@@ -212,7 +221,7 @@ public class UserService {
                     userIds.put("commenterId", commenter.getId());
                     userIds.put("tweeterId", tweeterUserId);
                     return userIds;
-                } else throw new RelationshipNotFoundException("You can't comment on this tweet because you're not following" + tweeter.get().getUserName() + ".");
+                } else throw new RelationshipNotFoundException("You can't comment on this tweet because you're not following " + tweeter.get().getUserName() + ".");
             }
             else throw new RuntimeException("Well this is awkward. We found the tweet but its author seems to have gone missing and your comment didn't get posted.");
         } else throw new TweetNotFoundException("No tweet found with that ID.");

@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -137,7 +138,7 @@ public class UserServiceController {
     @RequestMapping(method= POST, value = "/tweet")
     public ResponseEntity tweet(@RequestBody HashMap<String,String> userData){
         try {
-            return new ResponseEntity(this.userService.tweet(userData.get("userName"), userData.get("message"), userData.get("timestamp")), HttpStatus.OK);
+            return new ResponseEntity(this.userService.tweet(userData.get("userName"), userData.get("message")), HttpStatus.OK);
         } catch (UserNotFoundException e) {
             return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
