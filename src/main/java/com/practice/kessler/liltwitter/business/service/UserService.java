@@ -1,5 +1,6 @@
 package com.practice.kessler.liltwitter.business.service;
 
+import com.practice.kessler.liltwitter.business.domain.TweetWithComments;
 import com.practice.kessler.liltwitter.data.entity.Comment;
 import com.practice.kessler.liltwitter.data.entity.Tweet;
 import com.practice.kessler.liltwitter.data.entity.User;
@@ -163,21 +164,21 @@ public class UserService {
     }
 
     //can return either list of tweets or list of tweets mapped to associated comments
-    public HashMap<Tweet, List<Comment>> getAllUserContentWithRequester(String requesterName, String posterUserName) throws UserNotFoundException {
+    public List<TweetWithComments> getAllUserContentWithRequester(String requesterName, String posterUserName) throws UserNotFoundException {
         User poster = userRepository.findByUserName(posterUserName);
         if (poster == null ){
             throw new UserNotFoundException("No user with the username " + posterUserName + " found.");
         }
         User requester = userRepository.findByUserName(requesterName);
         List<Tweet> usersTweets = getUsersTweets(posterUserName);
-        HashMap<Tweet, List<Comment>> tweetsWithComments = new HashMap<>();
+        List<TweetWithComments> tweetsWithComments = new ArrayList<>();
         usersTweets.forEach(tweet -> {
             try {
                 List<Comment> comments = getCommentsAssociatedWithTweet(String.valueOf(tweet.getId()));
-                tweetsWithComments.put(tweet, comments);
+                tweetsWithComments.add(new TweetWithComments(tweet, comments));
             } catch (TweetNotFoundException e) {
                 e.printStackTrace();
-                tweetsWithComments.put(tweet, new ArrayList<>());
+                tweetsWithComments.add(new TweetWithComments(tweet, null));
             }
         });
         return tweetsWithComments;

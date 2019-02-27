@@ -74,6 +74,7 @@ public class UserServiceController {
     }
 
     //TODO should differentiate between returning a tweet list because requester not found and because requester found but not following
+    @RequestMapping(method= POST, value = "/allUserContent")
     public ResponseEntity getAllUserContentWithRequester(@RequestBody HashMap<String, String> userData){
         try {
             this.userService.getUser(userData.get("requesterName"));
