@@ -1,6 +1,7 @@
 package com.practice.kessler.liltwitter.business.service;
 
 import com.practice.kessler.liltwitter.business.domain.TweetWithComments;
+import com.practice.kessler.liltwitter.business.domain.UserWithTweets;
 import com.practice.kessler.liltwitter.data.entity.Comment;
 import com.practice.kessler.liltwitter.data.entity.Tweet;
 import com.practice.kessler.liltwitter.data.entity.User;
@@ -242,6 +243,20 @@ public class UserService {
             return tweet.get();
         }
         throw new TweetNotFoundException("No tweet with that ID found.");
+    }
+
+    public List<UserWithTweets> getAllContentFromAllFollowedUsers(String requesterName) throws UserNotFoundException {
+        User requester = getUser(requesterName);
+        List<User> followedUsers = getFollowedUsers(requester);
+        List<UserWithTweets> usersWithTweets = new ArrayList<>();
+        followedUsers.forEach(user -> {
+            try {
+                usersWithTweets.add(new UserWithTweets(user, getAllUserContentWithRequester(requester.getUserName(), user.getUserName())));
+            } catch (UserNotFoundException e) {
+                e.printStackTrace();
+            }
+        });
+        return usersWithTweets;
     }
 
 }

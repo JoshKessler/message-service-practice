@@ -225,4 +225,20 @@ public class UserServiceController {
         }
     }
 
+    @RequestMapping(method= POST, value = "/allContentFromAllFollowedUsers")
+    public ResponseEntity getAllContentFromAllFollowedUsers(@RequestBody HashMap<String,String> userData){
+        ArrayList expectedFields = new ArrayList<String>(List.of("userName"));
+        ArrayList numericFields = new ArrayList<String>();
+        try {
+            checkInputs(userData, expectedFields, numericFields);
+        } catch (InvalidRequestDataException e) {
+            return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+        try {
+            return new ResponseEntity(this.userService.getAllContentFromAllFollowedUsers(userData.get("userName")), HttpStatus.OK);
+        } catch (UserNotFoundException e) {
+            return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
 }
