@@ -6,18 +6,17 @@ import com.practice.kessler.liltwitter.data.entity.Tweet;
 import com.practice.kessler.liltwitter.data.entity.User;
 import com.practice.kessler.liltwitter.data.entity.UserRelationship;
 import com.practice.kessler.liltwitter.data.repository.CommentRepository;
-import com.practice.kessler.liltwitter.data.repository.UserRelationshipsRepository;
 import com.practice.kessler.liltwitter.data.repository.TweetRepository;
+import com.practice.kessler.liltwitter.data.repository.UserRelationshipsRepository;
 import com.practice.kessler.liltwitter.data.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserService {
