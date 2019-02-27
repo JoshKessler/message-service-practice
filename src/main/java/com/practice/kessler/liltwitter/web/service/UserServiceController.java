@@ -1,9 +1,6 @@
 package com.practice.kessler.liltwitter.web.service;
 
-import com.practice.kessler.liltwitter.business.service.RelationshipAlreadyExistsException;
-import com.practice.kessler.liltwitter.business.service.RelationshipNotFoundException;
-import com.practice.kessler.liltwitter.business.service.UserNotFoundException;
-import com.practice.kessler.liltwitter.business.service.UserService;
+import com.practice.kessler.liltwitter.business.service.*;
 import com.practice.kessler.liltwitter.data.entity.Tweet;
 import com.practice.kessler.liltwitter.data.entity.User;
 import com.practice.kessler.liltwitter.data.entity.UserRelationship;
@@ -12,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -70,6 +68,13 @@ public class UserServiceController {
     //Should also change the message in the RelationshipNotFoundException so it differentiates between an attempt to make comments and view them
     @RequestMapping(method= POST, value = "/tweet/comments")
     public ResponseEntity getCommentsAssociatedWithTweet(@RequestBody HashMap<String, String> userData){
+        ArrayList expectedFields = new ArrayList<String>(List.of("requesterName", "tweetId"));
+        ArrayList numericFields = new ArrayList<String>(List.of("tweetId"));
+        try {
+            checkInputs(userData, expectedFields, numericFields);
+        } catch (InvalidRequestDataException e) {
+            return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
         try {
             return new ResponseEntity(this.userService.getCommentsAssociatedWithTweetIfFollowing(userData.get("requesterName"), userData.get("tweetId")), HttpStatus.OK);
         } catch (RelationshipNotFoundException e){
@@ -80,6 +85,32 @@ public class UserServiceController {
             return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
+
+    //helper method to check for bad inputs
+    private void checkInputs(HashMap<String, String> inputs, List<String> expectedFieldNames, List<String> expectedNumericFieldNames) throws InvalidRequestDataException {
+        for (String f : expectedFieldNames) {
+            if ((inputs.get(f) == null || inputs.get(f) == "")){
+                throwInputError(expectedFieldNames, expectedNumericFieldNames);
+            }
+        }
+        for (String f : expectedNumericFieldNames) {
+            try {
+                Long.parseLong(inputs.get(f));
+            } catch (NumberFormatException e){
+                throwInputError(expectedFieldNames, expectedNumericFieldNames);
+            }
+        }
+    }
+
+    //helper method to format error message and throw error
+    private void throwInputError(List<String> expectedFieldNames, List<String> expectedNumericFieldNames) throws InvalidRequestDataException {
+        StringBuilder sb = new StringBuilder("Invalid input. The following fields must all be present and non-empty: ");
+        sb.append(expectedFieldNames.toString());
+        sb.append(". The following fields must also be integers: ");
+        sb.append(expectedNumericFieldNames.toString());
+        throw new InvalidRequestDataException(sb.toString());
+    }
+
 
     //TODO should differentiate between returning a tweet list because requester not found and because requester found but not following
     @RequestMapping(method= POST, value = "/allUserContent")
