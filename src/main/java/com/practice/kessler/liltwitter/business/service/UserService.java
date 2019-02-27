@@ -259,4 +259,20 @@ public class UserService {
         return usersWithTweets;
     }
 
+    public void unfollow(String requesterName, String userToUnfollowName) throws UserNotFoundException, RelationshipNotFoundException {
+        User requester = userRepository.findByUserNameIgnoreCase(requesterName);
+        User unFollowed = userRepository.findByUserNameIgnoreCase(userToUnfollowName);
+        if (requester == null){
+            throw new UserNotFoundException("Your username not found");
+        }
+        if (requester == null){
+            throw new UserNotFoundException("No user with the username " + userToUnfollowName + " found");
+        }
+        UserRelationship rel = userRelationshipsRepository.findByFollowerIdAndFollowedId(requester.getId(), unFollowed.getId());
+        if (rel == null){
+            throw new RelationshipNotFoundException("You don't seem to be following " + userToUnfollowName);
+        }
+        userRelationshipsRepository.delete(rel);
+    }
+
 }

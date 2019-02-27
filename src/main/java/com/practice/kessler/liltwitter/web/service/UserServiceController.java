@@ -234,4 +234,23 @@ public class UserServiceController {
         }
     }
 
+    @RequestMapping(method= POST, value = "/new/unfollow")
+    public ResponseEntity unfollow(@RequestBody HashMap<String,String> userData){
+        ArrayList expectedFields = new ArrayList<String>(List.of("followerName", "followedName"));
+        ArrayList numericFields = new ArrayList<String>();
+        try {
+            checkInputs(userData, expectedFields, numericFields);
+        } catch (InvalidRequestDataException e) {
+            return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+        try {
+            this.userService.unfollow(userData.get("followerName"), userData.get("followedName"));
+            return new ResponseEntity("It should be a crime to say such things about someone's mother! You're no longer following them", HttpStatus.OK);
+        } catch (UserNotFoundException e) {
+            return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (RelationshipNotFoundException e){
+            return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
 }
